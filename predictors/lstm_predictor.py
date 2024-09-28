@@ -34,6 +34,7 @@ class LSTMPredictor(nn.Module):
     def __init__(self, deck_size, embedding_dim, hidden_dim):
         super(LSTMPredictor, self).__init__()
         self.embedding = nn.Embedding(deck_size + 1, embedding_dim, padding_idx=deck_size)
+        self.deck_size = deck_size
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True)
         self.fc = nn.Linear(hidden_dim, deck_size)
 
@@ -44,6 +45,16 @@ class LSTMPredictor(nn.Module):
 
     def reset(self):
         pass
+
+    def predict_probabilities(self, dealt_cards):
+        self.eval()
+        with torch.no_grad():
+            padded_input = np.pad(dealt_cards, (0, self.deck_size - len(dealt_cards)), 'constant',
+                                  constant_values=self.deck_size)
+            input_tensor = torch.tensor(padded_input, dtype=torch.long).unsqueeze(0).to("cuda")
+            output = self(input_tensor)
+            probabilities = torch.softmax(output, dim=1).squeeze().cpu().numpy()
+        return probabilities
 
 def train_model(model, train_loader, val_loader, num_epochs, patience, device):
     criterion = nn.CrossEntropyLoss()
@@ -99,13 +110,6 @@ def train_model(model, train_loader, val_loader, num_epochs, patience, device):
     return model
 
 
-def predict_next_card(model, dealt_cards, deck_size, device):
-    model.eval()
-    with torch.no_grad():
-        padded_input = np.pad(dealt_cards, (0, deck_size - len(dealt_cards)), 'constant', constant_values=deck_size)
-        input_tensor = torch.tensor(padded_input, dtype=torch.long).unsqueeze(0).to(device)
-        output = model(input_tensor)
-        probabilities = torch.softmax(output, dim=1).squeeze().cpu().numpy()
-    return probabilities
+
 
 

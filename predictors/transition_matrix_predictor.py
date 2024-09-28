@@ -3,55 +3,40 @@
 import numpy as np
 from tqdm import tqdm
 
+
 class TransitionMatrixPredictor:
     def __init__(self, deck_size):
         self.deck_size = deck_size
         self.transition_matrix = np.zeros((deck_size, deck_size))
-        self.initial_probabilities = None
-        self.current_probabilities = None
+        self.orders = []
+        self.conditional = []
+        self.current_matrix = None
 
     def train(self, shuffle_function, num_shuffles=10000):
+        card1 = 1
+        card2 = 2
         print("Training the Transition Matrix model...")
         for _ in tqdm(range(num_shuffles)):
             deck = shuffle_function(np.arange(self.deck_size))
-            for i in range(len(deck) - 1):
-                self.transition_matrix[deck[i], deck[i+1]] += 1
+            for i in range(len(deck)):
+                self.transition_matrix[deck[i], i] += 1
+            self.orders.append([deck.index(i) for i in range(len(deck))])
 
-        # Normalize the transition matrix
-        row_sums = self.transition_matrix.sum(axis=1)
-        self.transition_matrix = self.transition_matrix / row_sums[:, np.newaxis]
+        for i in range(self.deck_size):
 
-        # Calculate initial probabilities based on the first card of each shuffle
-        initial_counts = np.zeros(self.deck_size)
-        for _ in range(num_shuffles):
-            deck = shuffle_function(np.arange(self.deck_size))
-            initial_counts[deck[0]] += 1
-        self.initial_probabilities = initial_counts / num_shuffles
+            mask = self.orders[:, card1] == i
+            if np.sum(mask) > 0:
+                self.conditional[i] = np.bincount(self.orders[mask, card2], minlength=self.deck_size) / np.sum(mask)
 
-        self.reset()
+        self.transition_matrix = self.transition_matrix / num_shuffles
+        self.current_matrix = self.transition_matrix.copy()
 
     def predict_probabilities(self, dealt_cards):
-        if not dealt_cards:
-            return self.current_probabilities
-
-        last_card = dealt_cards[-1]
-        self.current_probabilities = self.transition_matrix[last_card]
-
-        # Zero out probabilities for cards already dealt
-        for card in dealt_cards:
-            self.current_probabilities[card] = 0
-
-        # Renormalize
-        total_prob = self.current_probabilities.sum()
-        if total_prob > 0:
-            self.current_probabilities /= total_prob
-        else:
-            # If all probabilities are zero, return uniform distribution over remaining cards
-            remaining_cards = set(range(self.deck_size)) - set(dealt_cards)
-            self.current_probabilities[list(remaining_cards)] = 1 / len(remaining_cards)
-
-        return self.current_probabilities
+        for i, card in enumerate(dealt_cards):
+            # zeroing out impossible
+            self.current_matrix[card][:] = 0
+        return self.current_matrix.T[len(dealt_cards)]
 
     def reset(self):
         # Reset the current probabilities to the initial probabilities
-        self.current_probabilities = self.initial_probabilities.copy()
+        self.current_matrix = self.transition_matrix.copy()

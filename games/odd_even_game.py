@@ -12,15 +12,18 @@ class OddEvenGame:
         predictor_correct = 0
         standard_correct = 0
 
+
         for _ in tqdm(range(num_games)):
             deck = shuffle_function(np.arange(self.deck_size))
             dealt_cards = []
 
             for i in range(self.deck_size - 1):
-                next_card = deck[i + 1]
+                next_card = deck[i]
 
                 probabilities = predictor.predict_probabilities(dealt_cards)
-                predictor_prediction = "odd" if np.sum(probabilities[1::2]) > np.sum(probabilities[0::2]) else "even"
+                a = np.sum(probabilities[1::2])
+                b = np.sum(probabilities[0::2])
+                predictor_prediction = "odd" if a > b else "even"
                 standard_prediction = self.standard_predict(dealt_cards)
 
                 actual = "odd" if next_card % 2 == 1 else "even"
@@ -31,6 +34,9 @@ class OddEvenGame:
                     standard_correct += 1
 
                 dealt_cards.append(deck[i])
+
+            predictor.reset()
+
 
         predictor_accuracy = predictor_correct / (num_games * (self.deck_size - 1))
         standard_accuracy = standard_correct / (num_games * (self.deck_size - 1))

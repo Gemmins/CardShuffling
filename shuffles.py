@@ -61,20 +61,26 @@ def riffle(left, right, stickiness):
 
 # strip shuffle - cut the deck into n roughly equal piles and
 # then stack in reverse order
-def box(deck, strips, stdev):
-    portion = len(deck)/strips
+def box(deck, strips=6, stdev=0.05):
+    portion = len(deck) / strips
     pile = []
 
     for i in range(strips - 1):
         if not len(deck) == 0:
-            a, deck = cut(deck, portion/len(deck), stdev)
+            a, deck = cut(deck, portion / len(deck), stdev)
             pile = stack(a, pile)
     pile = stack(deck, pile)
+    pile = [int(x) for x in pile]
+
     return pile
 
 
 def div(a, b):
-    return a/b if b else 1
+    return a / b if b else 1
+
+
+def identity(deck):
+    return deck
 
 
 # custom shuffle for 8 decks
