@@ -80,7 +80,7 @@ def div(a, b):
 
 
 def identity(deck):
-    return deck
+    return list(deck)
 
 
 # custom shuffle for 8 decks

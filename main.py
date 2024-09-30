@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import random_split
 from predictors.lstm_predictor import LSTMPredictor, DeckDataset, train_model
 from predictors.transition_matrix_predictor import TransitionMatrixPredictor
+from predictors.conditional_predictor import ConditionalPredictor
 from games.odd_even_game import OddEvenGame
 from games.next_card_game import NextCardGame
 from games.baccarat_game import BaccaratGame
@@ -13,18 +14,24 @@ import shuffles
 def main():
     deck_size = 52
     num_shuffles = 10000
-    num_games = 1000
-    shuffle = shuffles.custom
+    num_games = 100
+    shuffle = shuffles.box
 
     # Initialize games
     odd_even_game = OddEvenGame(deck_size)
     next_card_game = NextCardGame(deck_size)
     baccarat_game = BaccaratGame(deck_size)
 
+    print("Training Conditional Probability Predictor")
+    cond_pred = ConditionalPredictor(deck_size)
+    cond_pred.train(shuffle, num_shuffles=num_shuffles)
+
     # Initialize and train Transition Matrix predictor
     print("Training Transition Matrix Predictor...")
     transition_matrix_pred = TransitionMatrixPredictor(deck_size)
     transition_matrix_pred.train(shuffle, num_shuffles=num_shuffles)
+
+
 
     # Prepare data for neural network models
     full_dataset = DeckDataset(shuffle, num_shuffles, deck_size)
@@ -42,7 +49,7 @@ def main():
     print("Training LSTM Predictor...")
     embedding_dim = 32
     hidden_dim = 64
-    num_epochs = 1
+    num_epochs = 10
     patience = 5
 
     lstm_model = LSTMPredictor(deck_size, embedding_dim, hidden_dim)
@@ -52,6 +59,7 @@ def main():
     predictors = {
         "LSTM": lstm_model,
         "Transition Matrix": transition_matrix_pred,
+        "Conditional Model": cond_pred
     }
 
     # Play games and print results
@@ -60,7 +68,7 @@ def main():
         accuracy, _ = odd_even_game.play(shuffle, predictor, num_games)
         print(f"{name} Predictor Accuracy: {accuracy:.2%}")
 
-    """
+
     print("\nNext Card Prediction Game Results:")
     for name, predictor in predictors.items():
         accuracy, baseline_accuracy = next_card_game.play(shuffle, predictor, num_games)
@@ -69,7 +77,7 @@ def main():
         print(f"  Baseline Accuracy: {baseline_accuracy:.2%}")
         print(f"  Improvement over Baseline: {(accuracy - baseline_accuracy) / baseline_accuracy:.2%}")
 
-    
+    """
     print("\nBaccarat Game Results:")
     for name, predictor in predictors.items():
         player_win_rate, banker_win_rate, tie_rate, prediction_accuracy, predictor_ev, base_ev = baccarat_game.play(shuffle, predictor, num_games)

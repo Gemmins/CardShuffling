@@ -19,7 +19,7 @@ class NextCardGame:
             predictor.reset()
 
             for i in range(self.deck_size - 1):  # Predict all but the last card
-                next_card = deck[i + 1]
+                next_card = deck[i]
 
                 probabilities = predictor.predict_probabilities(dealt_cards)
                 predicted_card = np.argmax(probabilities)
