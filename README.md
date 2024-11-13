@@ -1,7 +1,7 @@
 This repo is just some personal investigations into possible exploitable patterns within specific card shuffles.
 The repo is currently very poorly organised and the code is a mess, but if you look at the jupyter notebook you might get some semblance of an idea of what I'm doing.
 
-Current progress is being able to predict eacb next card in a shuffled deck of cards at over twice the accuracy of just guessing.
+Currently I'm able to predict each next card in a shuffled deck of cards at over twice the accuracy of just guessing.
 This method uses a different model for each card position with the data the model takes in being the cards that have been dealt up to that point.
 
 ![ensemble_accuracies](https://github.com/user-attachments/assets/0e4c9060-a0f0-41f7-84ec-09ca54b30051)
