@@ -16,9 +16,10 @@ class NextCardGame:
         for _ in tqdm(range(num_games)):
             deck = shuffle_function(np.arange(self.deck_size))
             dealt_cards = []
+            dealt_cards.append(deck[0])
             predictor.reset()
 
-            for i in range(self.deck_size - 1):  # Predict all but the last card
+            for i in range(1, self.deck_size - 1):  # Predict all but the last card
                 next_card = deck[i]
 
                 probabilities = predictor.predict_probabilities(dealt_cards)

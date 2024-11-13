@@ -4,6 +4,12 @@ import numpy as np
 from tqdm import tqdm
 
 
+# games/odd_even_game.py
+
+import numpy as np
+from tqdm import tqdm
+
+
 class OddEvenGame:
     def __init__(self, deck_size):
         self.deck_size = deck_size
@@ -12,12 +18,11 @@ class OddEvenGame:
         predictor_correct = 0
         standard_correct = 0
 
-
         for _ in tqdm(range(num_games)):
             deck = shuffle_function(np.arange(self.deck_size))
             dealt_cards = []
-
-            for i in range(self.deck_size - 1):
+            dealt_cards.append(deck[0])
+            for i in range(1, self.deck_size - 1):
                 next_card = deck[i]
 
                 probabilities = predictor.predict_probabilities(dealt_cards)
@@ -37,12 +42,11 @@ class OddEvenGame:
 
             predictor.reset()
 
-
         predictor_accuracy = predictor_correct / (num_games * (self.deck_size - 1))
         standard_accuracy = standard_correct / (num_games * (self.deck_size - 1))
 
-        print(f"Predictor Accuracy: {predictor_accuracy:.2%}")
-        print(f"Standard Prediction Accuracy: {standard_accuracy:.2%}")
+        print(f"LSTM Predictor Accuracy: {predictor_accuracy:.3f}")
+        print(f"Standard Prediction Accuracy: {standard_accuracy:.3f}")
 
         return predictor_accuracy, standard_accuracy
 

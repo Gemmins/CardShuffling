@@ -84,25 +84,25 @@ def identity(deck):
 
 
 # custom shuffle for 8 decks
-def custom(deck, stickiness=0.3):
+def custom(deck, stickiness=0.6):
     a, b = cut(deck, 0.5, 0)
     pile = []
     portion = deck.size / 16
 
     for j in range(2):
         for i in range(7):
-            c, a = cut(a, div(portion, len(a)), 0.025)
-            d, b = cut(b, div(portion, len(b)), 0.025)
+            c, a = cut(a, div(portion, len(a)), 0.04)
+            d, b = cut(b, div(portion, len(b)), 0.04)
             pile = stack(pile, riffle(c, d, stickiness))
 
         pile = stack(pile, riffle(a, b, stickiness))
 
-        a, b = cut(pile, 0.5, 0.025)
+        a, b = cut(pile, 0.5, 0.04)
         pile = []
 
     for i in range(7):
-        c, a = cut(a, div(portion, len(a)), 0.025)
-        d, b = cut(b, div(portion, len(b)), 0.025)
+        c, a = cut(a, div(portion, len(a)), 0.04)
+        d, b = cut(b, div(portion, len(b)), 0.04)
 
         temp = riffle(c, d, stickiness)
         temp = box(temp, 6, 0.025)
@@ -114,3 +114,12 @@ def custom(deck, stickiness=0.3):
     pile = [int(x) for x in pile]
 
     return pile
+
+
+def normal(deck):
+    for i in range(3):
+        a, b = cut(deck, 0.5, 0.05)
+        deck = riffle(a, b, 0.3)
+        deck = box(deck, 5, 0.05)
+    return deck
+
